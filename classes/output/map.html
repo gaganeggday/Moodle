@@ -1,0 +1,360 @@
+//code that works
+/*
+<html>
+  <head>
+    <title>Simple Map</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+                   * element that contains the map. */
+      #map {
+        height: 50vh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCXhBh5Rb472QBlaGrsetjzPA8xmtV6TQ"
+      async
+      defer
+    ></script>
+    <script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.1.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/3.1.0/firebase-database.js"></script>
+
+    <script>
+
+               var firebaseConfig = {
+                   apiKey: "AIzaSyBIvYW8RoFcgH36NZ2aIv_0vugsjetYfOM",
+                   authDomain: "trainersmanagement.firebaseapp.com",
+                   databaseURL: "https://trainersmanagement.firebaseio.com",
+                   projectId: "trainersmanagement",
+                   storageBucket: "",
+                   messagingSenderId: "1019788159521",
+                   appId: "1:1019788159521:web:4bc631181086453f"
+               };
+
+               // Initialize Firebase
+               firebase.initializeApp(firebaseConfig);
+
+               var db = document.getElementById("db");
+
+            var dbRef = firebase.database().ref();
+            var schools = firebase.database().ref().child("Schools");
+            var trainers = firebase.database().ref().child("Trainers");
+
+               var lat,lng,name;
+
+            var map;
+      map = new google.maps.Map(document.getElementById("map"), {
+          center: {lat: 22.082639, lng: 78.921412},
+          zoom: 6
+               });
+
+               var infowindow = new google.maps.InfoWindow();
+               var schoolCircle = new google.maps.Circle();
+               var trainerCircle = new google.maps.Circle();
+
+               var schools, schoolMarkers, trainerMarkers, trainers;
+
+               schools.on("value", datasnapshot => {
+                   schools = datasnapshot.val();
+                   setSchoolMarkers();
+               });
+
+               trainers.on("value",datasnapshot => {
+                   trainers = datasnapshot.val();
+                   setTrainerMarkers();
+               });
+
+               function setSchoolMarkers(){
+
+                   for(var i=1;i<schools.length;i++){
+                       name = schools[i].Name;
+                       lat = schools[i].Latitude;
+                       lng = schools[i].Longitude;
+                       pos = new google.maps.LatLng(lat, lng);
+                       schoolMarkers = new google.maps.Marker({
+                           position: new google.maps.LatLng(lat, lng),
+                           map: map,
+                           title: name
+                       });
+
+                       var circle = new google.maps.Circle();
+                       google.maps.event.addListener(schoolMarkers,\'click\', (function(schoolMarkers,name,infowindow,pos) {
+                           return function() {
+                           infowindow.setContent(name);
+                           infowindow.open(map,schoolMarkers);
+                           addSchoolCircle(pos);
+                           };
+                       })(schoolMarkers,name,infowindow,pos));
+
+                   }
+
+               }
+
+               function setTrainerMarkers(){
+
+                   for(var i=1;i<trainers.length;i++){
+                       name = trainers[i].Name;
+                       lat = trainers[i].Latitude;
+                       lng = trainers[i].Longitude;
+                       pos = new google.maps.LatLng(lat, lng);
+                       trainerMarkers = new google.maps.Marker({
+                           position: new google.maps.LatLng(lat, lng),
+                           map: map,
+                           icon: {
+                               path: google.maps.SymbolPath.CIRCLE,
+                               scale: 7,
+                           },
+                           title: name
+                       });
+
+                       var circle = new google.maps.Circle();
+                       google.maps.event.addListener(trainerMarkers,\'click\', (function(trainerMarkers,name,infowindow,pos) {
+                           return function() {
+                           infowindow.setContent(name);
+                           infowindow.open(map,trainerMarkers);
+                           addTrainerCircle(pos);
+                           };
+                       })(trainerMarkers,name,infowindow,pos));
+
+                   }
+               }
+               function addSchoolCircle(location) {
+                   // Add the circle for this city to the map.
+                         schoolCircle = new google.maps.Circle({
+                             strokeColor: \'#FF0000\',
+                             strokeOpacity: 0.8,
+                             strokeWeight: 2,
+                             fillColor: \'#FF0000\',
+                             fillOpacity: 0.35,
+                             map: map,
+                             center: location,
+                             radius: 5000,
+                             draggable:false
+                         });
+                     }
+
+
+                     function addTrainerCircle(location) {
+                   //Add the circle for this city to the map.
+                         trainerCircle = new google.maps.Circle({
+                             strokeColor: \'#00FF00\',
+                             strokeOpacity: 0.8,
+                             strokeWeight: 2,
+                             fillColor: \'#00FF00\',
+                             fillOpacity: 0.35,
+                             map: map,
+                             center: location,
+                             radius: 5000,
+                             draggable:false
+                         });
+                     }
+    </script>
+  </body>
+</html>
+
+//sheets code
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Simple Map</title>
+    <!-- <meta name="viewport" content="initial-scale=1.0">
+            <meta charset="utf-8"> -->
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+               * element that contains the map. */
+      #map {
+        height: 50vh;
+        width: 100vw;
+      }
+    </style>
+  </head>
+  <body>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCXhBh5Rb472QBlaGrsetjzPA8xmtV6TQ"
+      async
+      defer
+    ></script>
+    <script>
+      var jsondata;
+      var latitude=[];
+      var longitude=[];
+      var description =[];
+      function Pressme(){
+
+          // Replace ./data.json with your JSON feed
+      fetch(\'https://api.myjson.com/bins/16jkcp\')
+        .then(response => {
+          return response.json()
+        })
+        .then(data => {
+
+          jsondata = data;
+
+        })
+        .catch(err => {
+            console.log(err)
+        })
+      for (var j =0;j< jsondata.length;j++)
+      {
+          latitude.push(jsondata[j].latitude);
+          longitude.push(jsondata[j].longitude);
+          description.push(jsondata[j].description);
+      }
+      console.log(latitude);
+      console.log(longitude);
+      console.log(description);
+      initMap();
+        }
+    </script>
+    <div id="map"></div>
+    <button onClick="Pressme()">Click me</button>
+    <script>
+      var map;
+      function initMap() {
+        map = new google.maps.Map(document.getElementById(\'map\'), {
+          center: {lat: -34.397, lng: 150.644},
+          zoom: 8
+        });
+
+        if (jsondata){
+            for (var j =0;j<jsondata.length;j++)
+            {
+                var marker = new google.maps.Marker({position: {lat: latitude[j], lng: longitude[j]}, map: map});
+            }
+
+      }
+      }
+    </script>
+  </body>
+</html>
+
+
+
+//json <code>
+
+  <script>
+    var jsondata;
+    var latitude = [];
+    var longitude = [];
+    var description = [];
+    var names = [];
+    var address = [];
+
+    function Pressme() {
+        fetch('https://api.myjson.com/bins/6mxph')
+            .then(response => {
+                return response.json()
+            })
+            .then(data => {
+
+                jsondata = data;
+
+            })
+            .catch(err => {
+                console.log(err)
+            })
+        if (jsondata) {
+            for (var j = 0; j < jsondata.length; j++) {
+                latitude.push(jsondata[j].latitude);
+                longitude.push(jsondata[j].longitude);
+                description.push(jsondata[j].description);
+                names.push(jsondata[j].name);
+                address.push(jsondata[j].address);
+            }
+        }
+
+        initMap();
+    }
+</script>
+<div style="float:left; width:70%; hieght:30%;padding-bottom:10px; margin-bottom:-10px" id="map">
+    <div><button onclick="Pressme()">Click me</button></div>
+</div>
+<div id="right" style="float:left;width:30%; background-color:#145FFA;color:#ffffff;font-family: &quot;Gotham 7r&quot;, sans-serif; text-align:left;padding-bottom:10px; margin-bottom:-10px"><br><br>
+
+    <div style="padding-left: 15px; padding-bottom: 20px; font-size: 27px; line-height: 1.2; font-family:verdana; color: rgb(255, 255, 255);">
+        <b>Find us!</b>
+    </div>
+    <div style="padding-left: 15px; padding-bottom: 20px; font-size: 16px;font-family: Gill Sans Extrabold, sans-serif">View peers, QtPi mentors and courses around you!
+    </div>
+    <div style="padding-left: 15px">
+        <a href="3link" data-radium="true" style="display: inline-block; font-size: 14px; font-family: &quot;Gotham 4r&quot;, sans-serif; border: 1px solid rgb(187, 187, 187); border-radius: 3px; text-decoration: none; box-sizing: border-box; overflow: hidden; white-space: nowrap; color: rgb(91, 103, 112); background-color: rgb(231, 232, 234); box-shadow: rgba(255, 255, 255, 0.73) 0px 2px 0px 0px inset; height: 34px; padding-left: 20px; padding-right: 20px; line-height: 34px;">
+            <div data-radium="true">
+                <!-- react-text: 77 -->Know more
+                <!-- /react-text -->
+            </div>
+        </a>
+    </div>
+</div>
+
+<script>
+    var map;
+
+    function initMap() {
+        if (jsondata) {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {
+                    lat: 20.5937,
+                    lng: 78.9629
+                },
+                zoom: 4
+            });
+            for (var j = 0; j < jsondata.length; j++) {
+                if (description[j] == "teacher") {
+                    addmarker1(map, latitude[j], longitude[j], description[j], names[j], address[j])
+                } else {
+                    addmarker2(map, latitude[j], longitude[j], description[j], names[j], address[j])
+                }
+
+            }
+        }
+    }
+
+    function addmarker1(map, latitude, longitude, description, name, address) {
+        var marker = new google.maps.Marker({
+            position: {
+                lat: latitude,
+                lng: longitude
+            },
+            map: map,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 10
+            }
+        });
+        var infowindow = new google.maps.InfoWindow({
+            content: '<h1><u>' + name + '</u></h1>' + ' <h3>' + address + '</h3>'
+
+        });
+        marker.addListener('click', function() {
+            infowindow.open(map, marker);
+        });
+    }
+
+    function addmarker2(map, latitude, longitude, description, name, address) {
+        var marker = new google.maps.Marker({
+            position: {
+                lat: latitude,
+                lng: longitude
+            },
+            map: map
+
+        });
+
+        var infowindow = new google.maps.InfoWindow({
+            content: '<h1><u>' + name + '</u></h1>' + ' <h3>' + address + '</h3>'
+            // content: description
+        });
+        marker.addListener('click', function() {
+            infowindow.open(map, marker);
+        });
+    }
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQN1XFr0EDqPPyYJ0L5gIm7toBG8hndiw" async="" defer=""></script>
+
+
+
+*/
